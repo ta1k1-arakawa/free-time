@@ -4,7 +4,7 @@ Slackで「今週」または「来週」と入力すると、Google Calendarの
 
 ## MVP概要
 
-MVPでは、指定したSlackチャンネルのコマンドを受け取り、Google Calendar FreeBusy APIから取得したbusy時間をPythonで計算し、空き時間と先方への送付用テキストをSlack threadへ返信します。現在はRepository Bootstrap（Phase 0）のみ実装済みで、SlackやGoogle Calendarとの通信はまだ実装されていません。
+MVPでは、指定したSlackチャンネルのコマンドを受け取り、Google Calendar FreeBusy APIから取得したbusy時間をPythonで計算し、空き時間と先方への送付用テキストをSlack threadへ返信します。現在はPhase 1まで実装済みで、SlackやGoogle Calendarとの通信はまだ実装されていません。
 
 ## Architecture（予定）
 
@@ -41,12 +41,12 @@ pytest
 pytest --cov=free_time --cov-report=term-missing
 ```
 
-Phase 0のテストは設定値と最小限のimmutable modelのみを対象とし、networkへ接続しません。
+Phase 0とPhase 1のテストは設定値、immutable model、週範囲・空き時間計算を対象とし、networkへ接続しません。
 
 ## Phase plan
 
-1. Phase 0 — Repository Bootstrap（現在）
-2. Phase 1 — Time Domain and Availability Engine
+1. Phase 0 — Repository Bootstrap
+2. Phase 1 — Time Domain and Availability Engine（現在）
 3. Phase 2 — Command Parser and Formatter
 4. Phase 3 — Google Calendar FreeBusy Integration
 5. Phase 4 — Application Use Case

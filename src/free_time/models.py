@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,4 +26,26 @@ class TimeRange:
             raise ValueError("TimeRange.end must be later than start")
 
 
-__all__ = ["TimeRange"]
+@dataclass(frozen=True, slots=True)
+class AvailabilityDay:
+    """Availability slots for one local calendar date."""
+
+    date: date
+    slots: tuple[TimeRange, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class AvailabilityResult:
+    """Availability grouped by date for a requested week."""
+
+    week: TimeRange
+    days: tuple[AvailabilityDay, ...]
+
+    @property
+    def slots(self) -> tuple[TimeRange, ...]:
+        """Return all candidate slots in chronological day order."""
+
+        return tuple(slot for day in self.days for slot in day.slots)
+
+
+__all__ = ["AvailabilityDay", "AvailabilityResult", "TimeRange"]
