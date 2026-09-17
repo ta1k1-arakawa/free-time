@@ -9,6 +9,9 @@ description = "A Slack bot for calculating interview availability from Google Ca
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "google-api-python-client>=2.0",
+    "google-auth>=2.0",
+    "google-auth-oauthlib>=1.0",
     "python-dotenv>=1.0",
     "tzdata>=2024.1",
 ]
