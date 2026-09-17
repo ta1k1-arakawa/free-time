@@ -401,6 +401,19 @@ def test_missing_requested_calendar_is_malformed(tmp_path: Path) -> None:
         service(tmp_path)._parse_response(response)
 
 
+def test_missing_busy_field_is_malformed(tmp_path: Path) -> None:
+    response = {"calendars": {"primary": {}}}
+
+    with pytest.raises(GoogleCalendarServiceError, match="busy response"):
+        service(tmp_path)._parse_response(response)
+
+
+def test_explicit_empty_busy_field_is_valid(tmp_path: Path) -> None:
+    response = {"calendars": {"primary": {"busy": []}}}
+
+    assert service(tmp_path)._parse_response(response) == ()
+
+
 def test_non_mapping_response_is_malformed(tmp_path: Path) -> None:
     with pytest.raises(GoogleCalendarServiceError, match="FreeBusy response"):
         service(tmp_path)._parse_response([])

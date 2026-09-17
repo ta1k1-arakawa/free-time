@@ -190,7 +190,9 @@ class GoogleCalendarService:
             if not isinstance(calendar_data, dict):
                 raise GoogleCalendarServiceError("Malformed FreeBusy calendar response")
             self._raise_for_calendar_errors(calendar_data)
-            busy = calendar_data.get("busy", [])
+            if "busy" not in calendar_data:
+                raise GoogleCalendarServiceError("Malformed FreeBusy busy response")
+            busy = calendar_data["busy"]
             if not isinstance(busy, list):
                 raise GoogleCalendarServiceError("Malformed FreeBusy busy response")
             intervals.extend(self._parse_busy_entries(busy))
