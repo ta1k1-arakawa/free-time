@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.env
+.env.*
+!.env.example
+
+credentials.json
+*credentials*.json
+calendar_token.json
+*token*.json
+
+.DS_Store
