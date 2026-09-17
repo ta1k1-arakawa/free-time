@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from enum import Enum
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,4 +49,24 @@ class AvailabilityResult:
         return tuple(slot for day in self.days for slot in day.slots)
 
 
-__all__ = ["AvailabilityDay", "AvailabilityResult", "TimeRange"]
+class PeriodType(Enum):
+    """Supported relative periods for availability requests."""
+
+    CURRENT_WEEK = "current_week"
+    NEXT_WEEK = "next_week"
+
+
+@dataclass(frozen=True, slots=True)
+class Command:
+    """A parsed availability command."""
+
+    period: PeriodType
+
+
+__all__ = [
+    "AvailabilityDay",
+    "AvailabilityResult",
+    "Command",
+    "PeriodType",
+    "TimeRange",
+]
