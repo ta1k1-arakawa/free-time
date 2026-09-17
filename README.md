@@ -172,8 +172,10 @@ SLACK_ALLOWED_CHANNEL_ID=<SLACK_CHANNEL_ID>
 Cloud Runへdeployした後、Slack AppのEvent SubscriptionsをOnにし、Request URLへ次を設定します。
 
 ~~~text
-https://<CLOUD_RUN_URL>/slack/events
+<CLOUD_RUN_URL>/slack/events
 ~~~
+
+ここで<CLOUD_RUN_URL>はscheme込みの完全なURLを表します。たとえばhttps://xxxxx.run.appのような値をそのまま置換してください。<CLOUD_RUN_URL>の前にhttps://を追加しないでください。
 
 public channelはmessage.channels、private channelはmessage.groupsをSubscribe to bot eventsへ追加します。DM、MPIM、app_mention、slash commandは対象外です。
 
@@ -324,7 +326,7 @@ healthzはGoogle Calendar、Slack API、OAuth refreshを呼びません。起動
 Cloud Run deployとhealth checkが成功したら、Slack AppのEvent Subscriptionsへ戻ります。
 
 1. Event SubscriptionsをOnにします。
-2. Request URLへhttps://<CLOUD_RUN_URL>/slack/eventsを入力します。
+2. Request URLへ<CLOUD_RUN_URL>/slack/eventsを入力します。
 3. Slackのsigned url_verificationを通過し、challengeが返ることを確認します。
 4. public channelならmessage.channels、private channelならmessage.groupsをSubscribe to bot eventsへ追加します。
 5. Save Changes後、botが対象channelへinvite済みであることを確認します。
