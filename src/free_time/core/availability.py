@@ -49,7 +49,7 @@ def calculate_availability(
 
     current_date = local_week_start.date()
     while _local_midnight(current_date, timezone) < local_week_end:
-        if current_date.weekday() in weekdays:
+        if current_date >= local_now.date() and current_date.weekday() in weekdays:
             slots = _calculate_day_slots(
                 current_date=current_date,
                 week_start=week.start,

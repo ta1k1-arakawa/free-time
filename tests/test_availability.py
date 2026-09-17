@@ -170,9 +170,6 @@ def test_current_time_removes_past_days_and_rounds_today() -> None:
     result = calculate(workdays=(0, 1, 2, 3, 4), now=now)
 
     assert [(day.date, len(day.slots)) for day in result.days] == [
-        (date(2026, 9, 14), 0),
-        (date(2026, 9, 15), 0),
-        (date(2026, 9, 16), 0),
         (date(2026, 9, 17), 1),
         (date(2026, 9, 18), 1),
     ]
@@ -198,8 +195,27 @@ def test_next_week_is_not_clipped_by_current_time() -> None:
         workdays=(0, 1, 2, 3, 4),
     )
 
-    assert result.days[0].date == date(2026, 9, 21)
-    assert result.days[0].slots[0].start.timetz() == time(10)
+    assert [day.date for day in result.days] == [
+        date(2026, 9, 21),
+        date(2026, 9, 22),
+        date(2026, 9, 23),
+        date(2026, 9, 24),
+        date(2026, 9, 25),
+    ]
+    assert all(day.slots[0].start.timetz() == time(10) for day in result.days)
+
+
+def test_past_week_has_no_availability_days() -> None:
+    now = local_time(3, 14, 12)
+    past_week = current_week_range(now - timedelta(days=7), JST)
+
+    result = calculate(
+        week=past_week,
+        now=now,
+        workdays=(0, 1, 2, 3, 4),
+    )
+
+    assert result.days == ()
 
 
 def test_naive_now_is_rejected() -> None:
