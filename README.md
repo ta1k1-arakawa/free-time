@@ -4,7 +4,7 @@ Slackで「今週」または「来週」と入力すると、Google Calendarの
 
 ## MVP概要
 
-MVPでは、指定したSlackチャンネルのコマンドを受け取り、Google Calendar FreeBusy APIから取得したbusy時間をPythonで計算し、空き時間と先方への送付用テキストをSlack threadへ返信します。現在はPhase 3まで実装済みです。Google Calendar FreeBusy adapterは実装済みですが、Slackからの利用やアプリケーション全体の接続はまだ実装されていません。
+MVPでは、指定したSlackチャンネルのコマンドを受け取り、Google Calendar FreeBusy APIから取得したbusy時間をPythonで計算し、空き時間と先方への送付用テキストをSlack threadへ返信します。現在はPhase 4まで実装済みです。text commandからCalendar adapter、availability計算、formatted responseまでのapplication layerは接続済みですが、Slackからの利用やHTTP endpointはまだ実装されていません。
 
 ## Architecture（予定）
 
@@ -41,15 +41,15 @@ pytest
 pytest --cov=free_time --cov-report=term-missing
 ```
 
-Phase 0〜3のテストは設定値、immutable model、週範囲・空き時間計算、command parser、formatter、Google Calendar credential handlingおよびFreeBusy response parsingを対象とし、networkへ接続しません。Google Calendarを利用する場合は、既存のmorning-brief-agentで作成した`calendar_token.json`をユーザー自身がこのリポジトリへ配置して再利用できます。Cloud Run等では`GOOGLE_CALENDAR_TOKEN_JSON`を利用する想定です。
+Phase 0〜4のテストは設定値、immutable model、週範囲・空き時間計算、command parser、formatter、Google Calendar credential handling、FreeBusy response parsing、application orchestrationを対象とし、networkへ接続しません。Google Calendarを利用する場合は、既存のmorning-brief-agentで作成した`calendar_token.json`をユーザー自身がこのリポジトリへ配置して再利用できます。Cloud Run等では`GOOGLE_CALENDAR_TOKEN_JSON`を利用する想定です。
 
 ## Phase plan
 
 1. Phase 0 — Repository Bootstrap
 2. Phase 1 — Time Domain and Availability Engine
 3. Phase 2 — Command Parser and Formatter
-4. Phase 3 — Google Calendar FreeBusy Integration（現在）
-5. Phase 4 — Application Use Case
+4. Phase 3 — Google Calendar FreeBusy Integration
+5. Phase 4 — Application Use Case（現在）
 6. Phase 5 — Slack Events API
 7. Phase 6 — Container and Cloud Run Readiness
 8. Phase 7 — Production Setup Documentation
