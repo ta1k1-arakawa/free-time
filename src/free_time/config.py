@@ -12,6 +12,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dotenv import dotenv_values
 
+from free_time.models import WEEK_MINUTES
+
 
 class ConfigError(ValueError):
     """Raised when application configuration is missing or invalid."""
@@ -117,6 +119,7 @@ def load_config(
         busy_buffer_minutes=_parse_non_negative_int(
             value("BUSY_BUFFER_MINUTES"),
             "BUSY_BUFFER_MINUTES",
+            maximum=WEEK_MINUTES,
         ),
         google_calendar_ids=_parse_csv(
             value("GOOGLE_CALENDAR_IDS"), "GOOGLE_CALENDAR_IDS"
@@ -196,7 +199,12 @@ def _parse_positive_int(raw: str | None, name: str) -> int:
     return parsed
 
 
-def _parse_non_negative_int(raw: str | None, name: str) -> int:
+def _parse_non_negative_int(
+    raw: str | None,
+    name: str,
+    *,
+    maximum: int | None = None,
+) -> int:
     value = _required_text(raw, name)
     try:
         parsed = int(value)
@@ -204,6 +212,8 @@ def _parse_non_negative_int(raw: str | None, name: str) -> int:
         raise ConfigError(f"{name} must be an integer") from exc
     if parsed < 0:
         raise ConfigError(f"{name} must be zero or greater")
+    if maximum is not None and parsed > maximum:
+        raise ConfigError(f"{name} must be at most {maximum}")
     return parsed
 
 

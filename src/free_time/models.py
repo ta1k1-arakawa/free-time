@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 
+WEEK_MINUTES = 7 * 24 * 60
+
 
 @dataclass(frozen=True, slots=True)
 class TimeRange:
@@ -70,4 +72,5 @@ __all__ = [
     "Command",
     "PeriodType",
     "TimeRange",
+    "WEEK_MINUTES",
 ]

@@ -285,7 +285,7 @@ LOG_LEVEL=INFO
 
 複数Calendarを使う場合はGOOGLE_CALENDAR_IDS=primary,<CALENDAR_ID>相当です。commaを含む値をshellのset-env-varsへ直接渡すとdelimiterの扱いで誤ることがあるため、env-vars-fileを推奨します。GOOGLE_CALENDAR_TOKEN_FILEとGOOGLE_CLIENT_SECRET_FILEはCloud Run productionの基本経路では設定しません。
 
-BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。commandは「今週 60」のように既存phraseの後へ空白と30分単位の正の整数を付けられます。
+BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。durationとbufferは対象週（1週間）を超える値をunsupportedとして扱います。commandは「今週 60」のように既存phraseの後へ空白と30分単位の正の整数を付けられます。
 
 ### 2. deployする
 

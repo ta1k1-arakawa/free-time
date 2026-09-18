@@ -5,7 +5,12 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from typing import Iterable
 
-from free_time.models import AvailabilityDay, AvailabilityResult, TimeRange
+from free_time.models import (
+    WEEK_MINUTES,
+    AvailabilityDay,
+    AvailabilityResult,
+    TimeRange,
+)
 
 
 def calculate_availability(
@@ -42,6 +47,7 @@ def calculate_availability(
     busy_buffer_minutes = _validate_non_negative_int(
         busy_buffer_minutes,
         "busy_buffer_minutes",
+        maximum=WEEK_MINUTES,
     )
     weekdays = _validate_workdays(workdays)
     _validate_range(week, "week")
@@ -224,9 +230,16 @@ def _validate_positive_int(value: int, name: str) -> int:
     return value
 
 
-def _validate_non_negative_int(value: int, name: str) -> int:
+def _validate_non_negative_int(
+    value: int,
+    name: str,
+    *,
+    maximum: int | None = None,
+) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value < 0:
         raise ValueError(f"{name} must be a non-negative integer")
+    if maximum is not None and value > maximum:
+        raise ValueError(f"{name} must be at most {maximum}")
     return value
 
 

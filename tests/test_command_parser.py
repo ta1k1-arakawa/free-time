@@ -78,3 +78,8 @@ def test_duration_commands_parse_strictly(text: str, expected: Command) -> None:
 )
 def test_invalid_duration_commands_do_not_parse(text: str) -> None:
     assert parse_command(text) is None
+
+
+def test_extreme_duration_returns_none_without_leaking_integer_errors() -> None:
+    assert parse_command("今週 1000000000000") is None
+    assert parse_command("今週 " + "9" * 5000) is None

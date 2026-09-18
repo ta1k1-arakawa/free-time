@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from free_time.models import Command, PeriodType
+from free_time.models import WEEK_MINUTES, Command, PeriodType
 
 _COMMANDS = {
     "今週": PeriodType.CURRENT_WEEK,
@@ -32,8 +32,15 @@ def parse_command(text: str) -> Command | None:
     duration_text = match.group(2)
     if duration_text is None:
         return Command(period=period)
-    duration_minutes = int(duration_text)
-    if duration_minutes <= 0 or duration_minutes % 30 != 0:
+    try:
+        duration_minutes = int(duration_text)
+    except ValueError:
+        return None
+    if (
+        duration_minutes <= 0
+        or duration_minutes > WEEK_MINUTES
+        or duration_minutes % 30 != 0
+    ):
         return None
     return Command(period=period, duration_minutes=duration_minutes)
 

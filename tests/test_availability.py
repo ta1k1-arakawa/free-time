@@ -311,3 +311,8 @@ def test_naive_now_is_rejected() -> None:
 def test_invalid_policy_is_rejected(kwargs, message: str) -> None:
     with pytest.raises(ValueError, match=message):
         calculate(**kwargs)
+
+
+def test_busy_buffer_beyond_supported_week_horizon_is_rejected() -> None:
+    with pytest.raises(ValueError, match="at most"):
+        calculate(busy_buffer_minutes=10**12)

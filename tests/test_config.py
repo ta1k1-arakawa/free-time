@@ -96,3 +96,11 @@ def test_busy_buffer_requires_non_negative_integer(value) -> None:
             dotenv_path=Path("missing.env"),
             environ={"BUSY_BUFFER_MINUTES": value},
         )
+
+
+def test_busy_buffer_rejects_value_beyond_supported_week_horizon() -> None:
+    with pytest.raises(ConfigError, match="BUSY_BUFFER_MINUTES"):
+        load_config(
+            dotenv_path=Path("missing.env"),
+            environ={"BUSY_BUFFER_MINUTES": "1000000000000"},
+        )
