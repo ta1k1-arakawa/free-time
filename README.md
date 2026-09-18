@@ -315,11 +315,11 @@ gcloud run services describe <SERVICE_NAME> --region=<REGION> --project=<PROJECT
 得られたURLをCLOUD_RUN_URLとして次を確認します。
 
 ~~~text
-GET <CLOUD_RUN_URL>/healthz
+GET <CLOUD_RUN_URL>/health
 期待値: {"status":"ok"}
 ~~~
 
-healthzはGoogle Calendar、Slack API、OAuth refreshを呼びません。起動時のnetwork dependencyがないことも確認してください。
+healthはGoogle Calendar、Slack API、OAuth refreshを呼びません。起動時のnetwork dependencyがないことも確認してください。
 
 ## Slack Request URL設定
 
@@ -337,7 +337,7 @@ Request URLはcase-sensitiveです。SlackのURL verificationが成功しない�
 
 次の順番でmanual acceptanceを行います。
 
-- GET <CLOUD_RUN_URL>/healthzがHTTP 200で、bodyが{"status":"ok"}である
+- GET <CLOUD_RUN_URL>/healthがHTTP 200で、bodyが{"status":"ok"}である
 - Slack Event SubscriptionsのRequest URL verificationが成功する
 - botがallowed channelへinvite済みである
 - allowed channelで「今週」を投稿すると、同じmessage threadへ空き時間が返信される
@@ -382,7 +382,7 @@ Botの返答は新しいtop-level messageではなく、元のSlack messageのth
 
 - container startup failureの場合：Cloud Run revision logsでimport error、dependency install、Uvicorn起動失敗を確認します。secret値をログへ出さないでください。
 - secret permission failureの場合：Cloud Run service identityに、必要な各secretへのroles/secretmanager.secretAccessorが付与されているか確認します。
-- /healthzが開けない場合：service URL、region、revision status、public invocation、containerが0.0.0.0でlistenしていることを確認します。
+- /healthが開けない場合：service URL、region、revision status、public invocation、containerが0.0.0.0でlistenしていることを確認します。
 - public invocation設定に問題がある場合：Cloud RunのAllow public accessまたは--no-invoker-iam-checkの状態を確認します。組織のpolicyにより許可されない場合は管理者へ相談します。
 - PORTを手動overrideした場合：Cloud Runが注入するPORTを上書きせず、Dockerfileの0.0.0.0とPORT相当の起動を維持します。
 - Cloud Run logsを確認する場合：token、Signing Secret、refresh token、credential JSON、private Calendar dataを出力しないでください。
@@ -409,7 +409,7 @@ Botの返答は新しいtop-level messageではなく、元のSlack messageのth
 1. Slack AppでtokenまたはSigning Secretをrotateします。
 2. Secret Managerへ新versionを追加します。
 3. Cloud Run deployまたはservice updateで新しいversion numberを指定します。
-4. 新revisionのhealthz、Slack URL verification、thread replyを確認します。
+4. 新revisionのhealth、Slack URL verification、thread replyを確認します。
 5. 動作確認後、旧secret versionをdisableまたは削除します。
 
 tokenやSigning Secretのactual valueを表示して確認する手順は行いません。
@@ -420,7 +420,7 @@ tokenやSigning Secretのactual valueを表示して確認する手順は行い�
 2. 新しいcalendar_token.jsonを作成します。
 3. 既存のGoogle token secretへ新versionを追加します。
 4. Cloud Runを新versionへ更新して新revisionを作成します。
-5. 「今週」「来週」とhealthzを確認します。
+5. 「今週」「来週」とhealthを確認します。
 6. 旧versionを不要になった時点でdisableします。
 
 Secret Managerの値をCloud Runへenvironment variableとして渡す場合は、latestではなくversion numberを使う運用を推奨します。

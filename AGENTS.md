@@ -828,13 +828,13 @@ FastAPI entrypoint．
 最低限，
 
 ```text
-GET /healthz
+GET /health
 POST /slack/events
 ```
 
 を提供する．
 
-`GET /healthz` は，
+`GET /health` は，
 
 ```json
 {"status":"ok"}
@@ -1357,7 +1357,7 @@ MVPで仕様にないものを推測して処理しない．
 
 可能であればFastAPI TestClientを使用し，
 
-* `/healthz`
+* `/health`
 * Slack URL verification
 * invalid Slack signature
 
@@ -1629,7 +1629,7 @@ SlackRequestHandler
 endpoint：
 
 ```text
-GET /healthz
+GET /health
 POST /slack/events
 ```
 

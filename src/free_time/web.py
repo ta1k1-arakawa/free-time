@@ -37,8 +37,8 @@ def create_web_app(
     slack_handler = SlackRequestHandler(slack_app)
     api = FastAPI(title="free-time")
 
-    @api.get("/healthz")
-    async def healthz() -> dict[str, str]:
+    @api.get("/health")
+    async def health() -> dict[str, str]:
         return {"status": "ok"}
 
     @api.post("/slack/events")
