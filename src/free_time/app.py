@@ -55,12 +55,21 @@ class FreeTimeApplication:
             workdays=self.config.workdays,
             workday_start=self.config.workday_start,
             workday_end=self.config.workday_end,
-            min_slot_minutes=self.config.min_slot_minutes,
+            min_slot_minutes=(
+                command.duration_minutes
+                if command.duration_minutes is not None
+                else self.config.min_slot_minutes
+            ),
             slot_granularity_minutes=self.config.slot_granularity_minutes,
             now=now,
             timezone=self.config.timezone,
+            busy_buffer_minutes=self.config.busy_buffer_minutes,
         )
-        return format_availability(availability, command.period)
+        return format_availability(
+            availability,
+            command.period,
+            duration_minutes=command.duration_minutes,
+        )
 
 
 def _period_for_command(

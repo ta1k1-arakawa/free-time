@@ -13,11 +13,18 @@ _PERIOD_LABELS = {
 }
 
 
-def format_availability(result: AvailabilityResult, period: PeriodType) -> str:
+def format_availability(
+    result: AvailabilityResult,
+    period: PeriodType,
+    *,
+    duration_minutes: int | None = None,
+) -> str:
     """Format an availability result for direct Slack posting."""
 
     period_label = _period_label(period)
     title = f"📅 {period_label}の空き時間"
+    if duration_minutes is not None:
+        title += f"（{duration_minutes}分以上）"
     if not result.slots:
         return f"{title}\n\n条件に合う空き時間はありませんでした．"
 

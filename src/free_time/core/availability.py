@@ -19,6 +19,7 @@ def calculate_availability(
     slot_granularity_minutes: int,
     now: datetime,
     timezone: tzinfo,
+    busy_buffer_minutes: int = 0,
 ) -> AvailabilityResult:
     """Calculate interview slots for the requested week.
 
@@ -38,13 +39,20 @@ def calculate_availability(
         slot_granularity_minutes,
         "slot_granularity_minutes",
     )
+    busy_buffer_minutes = _validate_non_negative_int(
+        busy_buffer_minutes,
+        "busy_buffer_minutes",
+    )
     weekdays = _validate_workdays(workdays)
     _validate_range(week, "week")
 
     local_now = now.astimezone(timezone)
     local_week_start = week.start.astimezone(timezone)
     local_week_end = week.end.astimezone(timezone)
-    busy = tuple(_to_timezone(interval, timezone) for interval in busy_intervals)
+    busy = tuple(
+        _expand_interval(_to_timezone(interval, timezone), busy_buffer_minutes)
+        for interval in busy_intervals
+    )
     days: list[AvailabilityDay] = []
 
     current_date = local_week_start.date()
@@ -170,6 +178,13 @@ def _to_timezone(interval: TimeRange, target: tzinfo) -> TimeRange:
     )
 
 
+def _expand_interval(interval: TimeRange, minutes: int) -> TimeRange:
+    if minutes == 0:
+        return interval
+    buffer = timedelta(minutes=minutes)
+    return TimeRange(interval.start - buffer, interval.end + buffer)
+
+
 def _ceil_to_grid(value: datetime, origin: datetime, minutes: int) -> datetime:
     grid = timedelta(minutes=minutes)
     elapsed = value - origin
@@ -206,6 +221,12 @@ def _validate_time(value: time, name: str) -> None:
 def _validate_positive_int(value: int, name: str) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
         raise ValueError(f"{name} must be a positive integer")
+    return value
+
+
+def _validate_non_negative_int(value: int, name: str) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise ValueError(f"{name} must be a non-negative integer")
     return value
 
 

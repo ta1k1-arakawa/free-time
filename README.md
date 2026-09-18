@@ -13,7 +13,7 @@ Slack Events API -> Cloud Run -> FastAPI / Slack Bolt
   -> Formatter -> Slack thread reply
 ~~~
 
-Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。MVPで認識するcommandは、今週、今週の空き、今週の空き時間、来週、来週の空き、来週の空き時間です。
+Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。MVPで認識するcommandは、今週、今週の空き、今週の空き時間、来週、来週の空き、来週の空き時間、および既存phrase末尾の30分単位のduration指定です。
 
 ## 前提条件
 
@@ -277,12 +277,15 @@ WORKDAY_END=19:00
 WORKDAYS=0,1,2,3,4
 MIN_SLOT_MINUTES=30
 SLOT_GRANULARITY_MINUTES=30
+BUSY_BUFFER_MINUTES=30
 GOOGLE_CALENDAR_IDS=primary
 SLACK_ALLOWED_CHANNEL_ID=<SLACK_CHANNEL_ID>
 LOG_LEVEL=INFO
 ~~~
 
 複数Calendarを使う場合はGOOGLE_CALENDAR_IDS=primary,<CALENDAR_ID>相当です。commaを含む値をshellのset-env-varsへ直接渡すとdelimiterの扱いで誤ることがあるため、env-vars-fileを推奨します。GOOGLE_CALENDAR_TOKEN_FILEとGOOGLE_CLIENT_SECRET_FILEはCloud Run productionの基本経路では設定しません。
+
+BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。commandは「今週 60」のように既存phraseの後へ空白と30分単位の正の整数を付けられます。
 
 ### 2. deployする
 
@@ -432,7 +435,7 @@ Secret Managerの値をCloud Runへenvironment variableとして渡す場合は�
 - 遅延やSlack retryが実測された場合のfuture improvementとしてCloud Tasks、Pub/Sub、Redis、Celery、background workerを検討できますが、このMVPには導入していません。
 - single-workspace MVPであり、Slack OAuthのmulti-workspace install flowは実装していません。
 - Slack DM、MPIM、app_mention、slash commandは対象外です。
-- command parserは今週・来週の固定phraseだけを認識します。自然言語、duration指定、timezone指定は対象外です。
+- command parserは今週・来週の固定phraseと、末尾に空白区切りで指定した30分単位のdurationだけを認識します。自然言語、durationの「分」表記、timezone指定は対象外です。
 - 実際のSlack workspace setup、Google OAuth、Secret Manager、Artifact Registry、Cloud Run deploy、IAM変更はmanual user operationです。
 
 ## Local setup

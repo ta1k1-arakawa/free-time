@@ -39,17 +39,20 @@ def config(
     workdays: tuple[int, ...] = (0, 1, 2, 3, 4),
     workday_start: time = time(10, 0),
     workday_end: time = time(19, 0),
+    min_slot_minutes: int = 30,
+    busy_buffer_minutes: int = 0,
 ) -> AppConfig:
     return AppConfig(
         timezone=TOKYO,
         workday_start=workday_start,
         workday_end=workday_end,
         workdays=workdays,
-        min_slot_minutes=30,
+        min_slot_minutes=min_slot_minutes,
         slot_granularity_minutes=30,
         google_calendar_ids=("primary",),
         google_calendar_token_file=Path("calendar_token.json"),
         google_client_secret_file=Path("credentials.json"),
+        busy_buffer_minutes=busy_buffer_minutes,
     )
 
 
@@ -114,6 +117,48 @@ def test_current_week_flow_uses_parser_availability_and_formatter() -> None:
     assert "・16:00〜19:00" in output
     assert "・15:00〜16:00" not in output
     assert len(calendar.requested_periods) == 1
+
+
+def test_configured_busy_buffer_is_applied_in_application_flow() -> None:
+    calendar = FakeCalendar(busy=(busy_on_thursday(15, 16),))
+    application = FreeTimeApplication(
+        config=config(busy_buffer_minutes=30),
+        calendar=calendar,
+    )
+
+    output = application.handle_command("今週", now=now())
+
+    assert output is not None
+    assert "・16:30〜19:00" in output
+    assert "・16:00〜19:00" not in output
+
+
+def test_duration_command_overrides_configured_minimum_slot() -> None:
+    calendar = FakeCalendar()
+    application = FreeTimeApplication(
+        config(
+            workdays=(3,),
+            workday_start=time(10),
+            workday_end=time(12),
+            min_slot_minutes=150,
+        ),
+        calendar=calendar,
+    )
+
+    default_match = application.handle_command("来週", now=now())
+    output = application.handle_command("来週 60", now=now())
+    no_match = application.handle_command("来週 150", now=now())
+
+    assert (
+        default_match == "📅 来週の空き時間\n\n条件に合う空き時間はありませんでした．"
+    )
+    assert output is not None
+    assert "📅 来週の空き時間（60分以上）" in output
+    assert "・10:00〜12:00" in output
+    assert (
+        no_match
+        == "📅 来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
+    )
 
 
 def test_full_business_window_returns_no_availability_message() -> None:

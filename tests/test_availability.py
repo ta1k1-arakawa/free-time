@@ -51,6 +51,7 @@ def calculate(
     workday_end: time = time(19, 0),
     min_slot_minutes: int = 30,
     slot_granularity_minutes: int = 30,
+    busy_buffer_minutes: int = 0,
     timezone_value=JST,
 ):
     now = now or local_time(0, 9)
@@ -65,6 +66,7 @@ def calculate(
         slot_granularity_minutes=slot_granularity_minutes,
         now=now,
         timezone=timezone_value,
+        busy_buffer_minutes=busy_buffer_minutes,
     )
 
 
@@ -124,6 +126,79 @@ def test_busy_outside_business_hours_does_not_change_availability() -> None:
     busy = (interval(0, 8, 9), interval(0, 19, 20))
 
     assert slot_times(calculate(busy)) == [(time(10), time(19))]
+
+
+def test_busy_buffer_expands_interval_before_clipping_and_merging() -> None:
+    busy = (interval(0, 13, 14),)
+
+    assert slot_times(calculate(busy, busy_buffer_minutes=30)) == [
+        (time(10), time(12, 30)),
+        (time(14, 30), time(19)),
+    ]
+
+
+def test_busy_buffer_is_clipped_at_business_window_boundaries() -> None:
+    starts_at_business_open = (interval(0, 10, 11),)
+    ends_at_business_close = (interval(0, 18, 19),)
+
+    assert slot_times(calculate(starts_at_business_open, busy_buffer_minutes=30)) == [
+        (time(11, 30), time(19))
+    ]
+    assert slot_times(calculate(ends_at_business_close, busy_buffer_minutes=30)) == [
+        (time(10), time(17, 30))
+    ]
+
+
+def test_buffered_busy_intervals_are_merged() -> None:
+    busy = (interval(0, 13, 13, end_minute=30), interval(0, 14, 14, end_minute=30))
+
+    assert slot_times(calculate(busy, busy_buffer_minutes=30)) == [
+        (time(10), time(12, 30)),
+        (time(15), time(19)),
+    ]
+
+
+def test_zero_busy_buffer_preserves_unbuffered_behavior() -> None:
+    busy = (interval(0, 13, 14),)
+
+    assert slot_times(calculate(busy, busy_buffer_minutes=0)) == [
+        (time(10), time(13)),
+        (time(14), time(19)),
+    ]
+
+
+def test_busy_buffer_does_not_mutate_input_interval() -> None:
+    busy = interval(0, 13, 14)
+    original = (busy.start, busy.end)
+
+    calculate((busy,), busy_buffer_minutes=30)
+
+    assert (busy.start, busy.end) == original
+
+
+@pytest.mark.parametrize(
+    ("workday_end", "min_slot_minutes", "expected"),
+    [
+        (time(10, 30), 60, []),
+        (time(11), 60, [(time(10), time(11))]),
+        (time(11), 90, []),
+    ],
+)
+def test_minimum_duration_filters_whole_free_ranges(
+    workday_end: time,
+    min_slot_minutes: int,
+    expected: list[tuple[time, time]],
+) -> None:
+    assert (
+        slot_times(
+            calculate(
+                workday_start=time(10),
+                workday_end=workday_end,
+                min_slot_minutes=min_slot_minutes,
+            )
+        )
+        == expected
+    )
 
 
 def test_cross_day_busy_interval_is_clipped_on_both_days() -> None:
@@ -228,6 +303,7 @@ def test_naive_now_is_rejected() -> None:
     [
         ({"min_slot_minutes": 0}, "positive integer"),
         ({"slot_granularity_minutes": 0}, "positive integer"),
+        ({"busy_buffer_minutes": -1}, "non-negative integer"),
         ({"workdays": ()}, "must not be empty"),
         ({"workday_start": time(19), "workday_end": time(10)}, "earlier"),
     ],

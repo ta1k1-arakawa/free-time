@@ -39,6 +39,7 @@ class AppConfig:
     slack_signing_secret: str | None = field(default=None, repr=False)
     slack_allowed_channel_id: str | None = None
     log_level: str = "INFO"
+    busy_buffer_minutes: int = 30
 
     def validate_runtime(self) -> None:
         """Validate values required when the integrations are started.
@@ -66,6 +67,7 @@ _DEFAULTS: dict[str, str] = {
     "WORKDAYS": "0,1,2,3,4",
     "MIN_SLOT_MINUTES": "30",
     "SLOT_GRANULARITY_MINUTES": "30",
+    "BUSY_BUFFER_MINUTES": "30",
     "GOOGLE_CALENDAR_IDS": "primary",
     "GOOGLE_CALENDAR_TOKEN_FILE": "calendar_token.json",
     "GOOGLE_CLIENT_SECRET_FILE": "credentials.json",
@@ -111,6 +113,10 @@ def load_config(
         slot_granularity_minutes=_parse_positive_int(
             value("SLOT_GRANULARITY_MINUTES"),
             "SLOT_GRANULARITY_MINUTES",
+        ),
+        busy_buffer_minutes=_parse_non_negative_int(
+            value("BUSY_BUFFER_MINUTES"),
+            "BUSY_BUFFER_MINUTES",
         ),
         google_calendar_ids=_parse_csv(
             value("GOOGLE_CALENDAR_IDS"), "GOOGLE_CALENDAR_IDS"
@@ -190,6 +196,17 @@ def _parse_positive_int(raw: str | None, name: str) -> int:
     return parsed
 
 
+def _parse_non_negative_int(raw: str | None, name: str) -> int:
+    value = _required_text(raw, name)
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be an integer") from exc
+    if parsed < 0:
+        raise ConfigError(f"{name} must be zero or greater")
+    return parsed
+
+
 def _parse_csv(raw: str | None, name: str) -> tuple[str, ...]:
     value = _required_text(raw, name)
     items = tuple(item.strip() for item in value.split(","))
@@ -218,6 +235,8 @@ def _optional_text(raw: str | None) -> str | None:
 
 
 def _required_text(raw: str | None, name: str) -> str:
+    if not isinstance(raw, str):
+        raise ConfigError(f"{name} must be text")
     value = (raw or "").strip()
     if not value:
         raise ConfigError(f"Missing required setting: {name}")

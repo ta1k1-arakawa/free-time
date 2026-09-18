@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from free_time.models import TimeRange
+from free_time.models import Command, PeriodType, TimeRange
 
 
 def test_time_range_is_immutable_and_timezone_aware() -> None:
@@ -23,3 +23,11 @@ def test_time_range_rejects_naive_or_empty_intervals() -> None:
         TimeRange(datetime(2026, 9, 17, 10, 0), aware)
     with pytest.raises(ValueError, match="later"):
         TimeRange(aware, aware)
+
+
+def test_command_duration_is_optional_and_immutable() -> None:
+    without_duration = Command(PeriodType.CURRENT_WEEK)
+    with_duration = Command(PeriodType.NEXT_WEEK, 60)
+
+    assert without_duration.duration_minutes is None
+    assert with_duration.duration_minutes == 60

@@ -61,6 +61,7 @@ class Command:
     """A parsed availability command."""
 
     period: PeriodType
+    duration_minutes: int | None = None
 
 
 __all__ = [

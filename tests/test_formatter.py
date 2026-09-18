@@ -75,6 +75,25 @@ def test_next_week_title_is_used() -> None:
     assert output.startswith("📅 来週の空き時間")
 
 
+def test_duration_is_added_to_title_without_changing_share_section() -> None:
+    availability = result(
+        AvailabilityDay(
+            date(2026, 9, 17),
+            (slot(date(2026, 9, 17), time(10), time(11)),),
+        )
+    )
+
+    output = format_availability(
+        availability,
+        PeriodType.CURRENT_WEEK,
+        duration_minutes=60,
+    )
+
+    assert output.startswith("📅 今週の空き時間（60分以上）")
+    assert "📋 先方への送付用" in output
+    assert "以下の日程で調整可能です．" in output
+
+
 def test_no_slots_uses_empty_result_format_without_share_section() -> None:
     availability = result(AvailabilityDay(date(2026, 9, 17), ()))
 

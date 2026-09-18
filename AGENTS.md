@@ -212,6 +212,8 @@ Slackへの返答は元メッセージのthread内に投稿する．
 
 Command Parserとして明示的に実装すること．
 
+既存phraseの末尾に1文字以上のPython whitespaceと正の30分単位整数を付けたduration指定（例：`今週 60`）も認識する．「分」付き，30分未満，30の倍数でない値，その他の自然言語は認識しない．
+
 ---
 
 # 5. 対象Slack Channel
@@ -480,6 +482,8 @@ MIN_SLOT_MINUTES=30
 SLOT_GRANULARITY_MINUTES=30
 ```
 
+busy intervalにはavailability計算時に，環境変数 `BUSY_BUFFER_MINUTES`（default：30，0以上の整数）分のbufferを前後へ適用する．bufferはdomain layerで元のintervalを変更せずに拡張し，その後既存のclip・merge処理を行う．
+
 例：
 
 busy終了：
@@ -550,6 +554,8 @@ Calendar APIから取得したbusy intervalについて，
 8. MIN_SLOT_MINUTES未満を除外
 
 する．
+
+duration指定commandでは，`MIN_SLOT_MINUTES`の代わりに指定されたdurationをminimum slot durationとして使用する．固定長へ分割せず，条件を満たす連続free range全体を返す．
 
 このdomain logicには外部API依存を入れてはいけない．
 
@@ -1036,6 +1042,7 @@ WORKDAYS=0,1,2,3,4
 
 MIN_SLOT_MINUTES=30
 SLOT_GRANULARITY_MINUTES=30
+BUSY_BUFFER_MINUTES=30
 
 GOOGLE_CALENDAR_IDS=primary
 GOOGLE_CALENDAR_TOKEN_FILE=calendar_token.json
@@ -1324,6 +1331,8 @@ unionされる．
 来週の空き
 来週の空き時間
 ```
+
+duration付きcommandとして，既存phraseに続くwhitespaceと30分単位の正の整数（例：`今週 60`）を認識する．`今週30`，`今週 45`，`今週 30分`などは認識しない．
 
 以下には反応しない：
 

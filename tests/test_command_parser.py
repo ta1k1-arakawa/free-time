@@ -47,3 +47,34 @@ def test_unknown_phrases_do_not_parse(text: str) -> None:
 def test_parser_only_trims_outer_whitespace() -> None:
     assert parse_command("\n来週の空き時間\n") == Command(PeriodType.NEXT_WEEK)
     assert parse_command("今 週") is None
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("今週 30", Command(PeriodType.CURRENT_WEEK, 30)),
+        ("今週　30", Command(PeriodType.CURRENT_WEEK, 30)),
+        ("来週\t60", Command(PeriodType.NEXT_WEEK, 60)),
+        ("今週の空き 90", Command(PeriodType.CURRENT_WEEK, 90)),
+        ("今週の空き時間 120", Command(PeriodType.CURRENT_WEEK, 120)),
+        (" \n来週の空き時間\t60 \n", Command(PeriodType.NEXT_WEEK, 60)),
+    ],
+)
+def test_duration_commands_parse_strictly(text: str, expected: Command) -> None:
+    assert parse_command(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "今週30",
+        "今週 30分",
+        "今週 45",
+        "今週 0",
+        "今週 -30",
+        "今週お願いします",
+        "今週 30 お願いします",
+    ],
+)
+def test_invalid_duration_commands_do_not_parse(text: str) -> None:
+    assert parse_command(text) is None
