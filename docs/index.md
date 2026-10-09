@@ -1,6 +1,7 @@
 ---
 layout: default
 title: free-time
+permalink: /index.html
 ---
 
 # free-time
@@ -22,7 +23,8 @@ FreeBusy APIで予定が埋まっている時間帯のみを取得します。
 ## 運営・お問い合わせ
 
 運営者：ta1k1-arakawa
-連絡先：taiki0305ara@gmail.com
+
+連絡先：[taiki0305ara@gmail.com](mailto:taiki0305ara@gmail.com)
 
 ## 関連ページ
 

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title | escape }} | free-time</title>
+    <meta name="description" content="{{ site.description | escape }}">
+    <style>
+      body { margin: 0; color: #243042; background: #f8fafc;
+        font-family: system-ui, sans-serif; line-height: 1.8; }
+      main { max-width: 760px; margin: 32px auto; padding: 24px;
+        background: white; border: 1px solid #e2e8f0; border-radius: 12px; }
+      h1, h2 { line-height: 1.4; }
+      h2 { margin-top: 32px; }
+      a { color: #1755a6; overflow-wrap: anywhere; }
+      a:focus-visible { outline: 3px solid #1755a6; outline-offset: 3px; }
+      @media (max-width: 600px) { main { margin: 0; padding: 20px;
+        border: 0; border-radius: 0; } }
+    </style>
+  </head>
+  <body>
+    <main>{{ content }}</main>
+  </body>
+</html>
