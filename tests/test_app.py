@@ -182,10 +182,8 @@ def test_duration_command_overrides_configured_minimum_slot() -> None:
     output = application.handle_command("来週 60", now=now())
     no_match = application.handle_command("来週 150", now=now())
 
-    assert (
-        default_match == (
-            "📅 来週の空き時間\n\n条件に合う空き時間はありませんでした．"
-        )
+    assert default_match == (
+        "📅 来週の空き時間\n\n条件に合う空き時間はありませんでした．"
     )
     assert output is not None
     assert output.startswith(
