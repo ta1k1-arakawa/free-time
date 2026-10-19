@@ -1,6 +1,6 @@
 # free-time
 
-Slackの指定チャンネルで「今週」または「来週」を受け取ると、Google Calendar FreeBusy APIからbusy intervalだけを取得し、面談・面接調整用の候補時間を計算してSlack threadへ返信するBotです。
+Slackの指定チャンネルで「今週」「来週」「再来週」を受け取ると、Google Calendar FreeBusy APIからbusy intervalだけを取得し、面談・面接調整用の候補時間を計算してSlack threadへ返信するBotです。
 
 MVPのPython実装、Google Calendar FreeBusy連携、Slack Events API連携、FastAPI、Dockerfile、Cloud Run runtime対応、およびproduction setup documentationまで完成しています。実際のSlack workspace設定、Google Cloud resource作成、OAuth実行、Cloud Run deployはユーザーが行う作業であり、このrepositoryでは完了していません。
 
@@ -13,7 +13,7 @@ Slack Events API -> Cloud Run -> FastAPI / Slack Bolt
   -> Formatter -> Slack thread reply
 ~~~
 
-Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。MVPで認識するcommandは、今週、今週の空き、今週の空き時間、来週、来週の空き、来週の空き時間、および既存phrase末尾の30分単位のduration指定です。
+Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。対応するcommandは「今週」「来週」「再来週」と、それぞれの「の空き」「の空き時間」付き表記です。「今週 90」「来週 90分」「再来週の90分の空き」のような30分単位の指定も認識します。
 
 ## 前提条件
 
@@ -106,7 +106,7 @@ Cloud Run上でInstalledAppFlowやbrowser OAuthを行わないでください。
 4. 生成したclient credentialをcredentials.jsonとして取得し、localのfree-time repository rootへ配置します。
 5. GOOGLE_CALENDAR_TOKEN_JSONを設定せず、calendar_token.jsonがまだ存在しない状態にします。
 6. GOOGLE_CLIENT_SECRET_FILE=credentials.json、GOOGLE_CALENDAR_TOKEN_FILE=calendar_token.jsonを設定します。
-7. localのアプリケーション入口から、認証が必要なCalendar requestを一度発生させます。validな「今週」または「来週」の処理をlocalで実行すると、InstalledAppFlowがbrowserを開きます。
+7. localのアプリケーション入口から、認証が必要なCalendar requestを一度発生させます。validな「今週」「来週」「再来週」のいずれかをlocalで実行すると、InstalledAppFlowがbrowserを開きます。
 8. browserでGoogle accountとscopeを確認して許可します。
 9. localにcalendar_token.jsonが生成されたことを確認します。
 
@@ -285,7 +285,7 @@ LOG_LEVEL=INFO
 
 複数Calendarを使う場合はGOOGLE_CALENDAR_IDS=primary,<CALENDAR_ID>相当です。commaを含む値をshellのset-env-varsへ直接渡すとdelimiterの扱いで誤ることがあるため、env-vars-fileを推奨します。GOOGLE_CALENDAR_TOKEN_FILEとGOOGLE_CLIENT_SECRET_FILEはCloud Run productionの基本経路では設定しません。
 
-BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。durationとbufferは対象週（1週間）を超える値をunsupportedとして扱います。commandは「今週 60」のように既存phraseの後へ空白と30分単位の正の整数を付けられます。
+BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。durationとbufferは対象週（1週間）を超える値をunsupportedとして扱います。commandは「今週 60」「来週 90分」「再来週の90分の空き」のように30分単位で指定できます。指定時間以上の連続した空き時間全体を表示し、固定長には分割しません。
 
 ### 2. deployする
 
@@ -345,6 +345,8 @@ Request URLはcase-sensitiveです。SlackのURL verificationが成功しない�
 - botがallowed channelへinvite済みである
 - allowed channelで「今週」を投稿すると、同じmessage threadへ空き時間が返信される
 - allowed channelで「来週」を投稿すると、来週の候補が同じthreadへ返信される
+- allowed channelで「再来週」を投稿すると、再来週の候補が同じthreadへ返信される
+- allowed channelで「再来週 90分」を投稿すると、90分以上の連続した候補が同じthreadへ返信される
 - top-level messageにはそのmessageのtsをthread rootとして返信される
 - thread内のmessageには既存thread_tsへ返信される
 - 他channelの「今週」には返信しない
@@ -423,7 +425,7 @@ tokenやSigning Secretのactual valueを表示して確認する手順は行い�
 2. 新しいcalendar_token.jsonを作成します。
 3. 既存のGoogle token secretへ新versionを追加します。
 4. Cloud Runを新versionへ更新して新revisionを作成します。
-5. 「今週」「来週」とhealthを確認します。
+5. 「今週」「来週」「再来週 90分」とhealthを確認します。
 6. 旧versionを不要になった時点でdisableします。
 
 Secret Managerの値をCloud Runへenvironment variableとして渡す場合は、latestではなくversion numberを使う運用を推奨します。
@@ -435,7 +437,7 @@ Secret Managerの値をCloud Runへenvironment variableとして渡す場合は�
 - 遅延やSlack retryが実測された場合のfuture improvementとしてCloud Tasks、Pub/Sub、Redis、Celery、background workerを検討できますが、このMVPには導入していません。
 - single-workspace MVPであり、Slack OAuthのmulti-workspace install flowは実装していません。
 - Slack DM、MPIM、app_mention、slash commandは対象外です。
-- command parserは今週・来週の固定phraseと、末尾に空白区切りで指定した30分単位のdurationだけを認識します。自然言語、durationの「分」表記、timezone指定は対象外です。
+- command parserは今週・来週・再来週の固定phrase、空き・空き時間付き表記、30分単位のduration（数字のみ／「分」付き／「の90分の空き」形式）を認識します。それ以外の自由な自然言語やtimezone指定は対象外です。
 - 実際のSlack workspace setup、Google OAuth、Secret Manager、Artifact Registry、Cloud Run deploy、IAM変更はmanual user operationです。
 
 ## Local setup
