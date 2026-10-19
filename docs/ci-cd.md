@@ -1,5 +1,22 @@
 # GitHub Actions CI / CD
 
+## このrepositoryの設定状況（2026-10-19）
+
+既存projectへのCD初期設定を完了しました。GitHubの接続variablesと`CD_ENABLED=true`を登録し、`production` environmentのdeployment branchをmainだけに制限しています。
+
+| 項目 | 設定値 |
+| --- | --- |
+| Google Cloud project | `free-time-509005`（number: `24634453019`） |
+| Region | `asia-northeast1` |
+| Artifact Registry / Cloud Run service | どちらも`free-time` |
+| Deploy service account | `free-time-deploy@free-time-509005.iam.gserviceaccount.com` |
+| Runtime service account | `free-time-run@free-time-509005.iam.gserviceaccount.com` |
+| WIF pool / provider | `free-time-github` / `github` |
+
+WIFは下記のrepository ID・owner ID・main・CI workflowの条件で制限しています。deploy用アカウントの権限は対象registryのwriter、対象Cloud Runのdeveloper、runtimeアカウントのserviceAccountUserです。service account keyは作成していません。
+
+設定時点でPR #1は未mergeです。人間がPR #1をmainへmergeすると初回のCDが起動します。実際のGitHub OIDC認証・image push・Cloud Run更新を通した検証は、その初回実行で確認してください。設定作業だけで既存の本番revisionを変更していません。
+
 ## 自動化する範囲
 
 `.github/workflows/ci.yml` はpush、pull request更新、Actions画面からの手動実行で起動します。
