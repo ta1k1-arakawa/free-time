@@ -44,6 +44,12 @@ def next_week_range(now: datetime, timezone: tzinfo) -> TimeRange:
     return week_range(now, timezone, week_offset=1)
 
 
+def week_after_next_range(now: datetime, timezone: tzinfo) -> TimeRange:
+    """Return the week two weeks after the week containing now."""
+
+    return week_range(now, timezone, week_offset=2)
+
+
 def _validate_timezone(value: tzinfo | None) -> None:
     if not isinstance(value, tzinfo):
         raise ValueError("timezone must be a valid tzinfo instance")
@@ -54,4 +60,9 @@ def _validate_aware(value: datetime, name: str) -> None:
         raise ValueError(f"{name} must be timezone-aware")
 
 
-__all__ = ["current_week_range", "next_week_range", "week_range"]
+__all__ = [
+    "current_week_range",
+    "next_week_range",
+    "week_after_next_range",
+    "week_range",
+]

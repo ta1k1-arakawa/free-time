@@ -13,4 +13,7 @@ calendar_token.json
 *token*.json
 credentials.json
 *credentials*.json
+*token*.json*
+*credentials*.json*
+gha-creds-*.json
 tests/

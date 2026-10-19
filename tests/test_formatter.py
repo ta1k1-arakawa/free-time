@@ -75,6 +75,23 @@ def test_next_week_title_is_used() -> None:
     assert output.startswith("📅 来週の空き時間")
 
 
+def test_week_after_next_title_is_used() -> None:
+    availability = result(
+        AvailabilityDay(
+            date(2026, 9, 28),
+            (slot(date(2026, 9, 28), time(10), time(12)),),
+        )
+    )
+
+    output = format_availability(
+        availability,
+        PeriodType.WEEK_AFTER_NEXT,
+        duration_minutes=90,
+    )
+
+    assert output.startswith("📅 再来週の空き時間（90分以上）")
+
+
 def test_duration_is_added_to_title_without_changing_share_section() -> None:
     availability = result(
         AvailabilityDay(

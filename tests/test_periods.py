@@ -5,7 +5,12 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from free_time.core.periods import current_week_range, next_week_range, week_range
+from free_time.core.periods import (
+    current_week_range,
+    next_week_range,
+    week_after_next_range,
+    week_range,
+)
 
 JST = ZoneInfo("Asia/Tokyo")
 
@@ -44,6 +49,15 @@ def test_week_boundaries_cover_month_and_year_changes(
 
     assert result.start == expected_start
     assert result.end == expected_end
+
+
+def test_week_after_next_handles_new_year_boundary() -> None:
+    now = at_utc(2026, 12, 25, 12)
+
+    result = week_after_next_range(now, JST)
+
+    assert result.start == at_utc(2027, 1, 4)
+    assert result.end == at_utc(2027, 1, 11)
 
 
 def test_week_offset_can_be_negative() -> None:

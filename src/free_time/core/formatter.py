@@ -10,6 +10,7 @@ _WEEKDAY_LABELS = ("月", "火", "水", "木", "金", "土", "日")
 _PERIOD_LABELS = {
     PeriodType.CURRENT_WEEK: "今週",
     PeriodType.NEXT_WEEK: "来週",
+    PeriodType.WEEK_AFTER_NEXT: "再来週",
 }
 
 

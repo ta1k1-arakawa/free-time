@@ -13,5 +13,8 @@ credentials.json
 *credentials*.json
 calendar_token.json
 *token*.json
+*token*.json*
+*credentials*.json*
+gha-creds-*.json
 
 .DS_Store

@@ -105,6 +105,35 @@ def test_next_week_period_is_passed_to_calendar_once() -> None:
     ]
 
 
+def test_week_after_next_with_90_minutes_queries_correct_week() -> None:
+    calendar = FakeCalendar()
+    application = FreeTimeApplication(
+        config=config(workdays=(0,), workday_start=time(10), workday_end=time(12)),
+        calendar=calendar,
+    )
+
+    output = application.handle_command("再来週 90分", now=now())
+    too_long = application.handle_command("再来週の150分の空き", now=now())
+
+    assert (
+        calendar.requested_periods
+        == [
+            TimeRange(
+                datetime(2026, 9, 28, tzinfo=TOKYO),
+                datetime(2026, 10, 5, tzinfo=TOKYO),
+            )
+        ]
+        * 2
+    )
+    assert output is not None
+    assert "📅 再来週の空き時間（90分以上）" in output
+    assert "9/28（月）" in output
+    assert "・10:00〜12:00" in output
+    assert too_long == (
+        "📅 再来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
+    )
+
+
 def test_current_week_flow_uses_parser_availability_and_formatter() -> None:
     calendar = FakeCalendar(busy=(busy_on_thursday(15, 16),))
     application = FreeTimeApplication(config=config(), calendar=calendar)
