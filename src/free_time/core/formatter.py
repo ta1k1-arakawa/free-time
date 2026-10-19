@@ -1,4 +1,4 @@
-"""Deterministic copy-ready Japanese formatting for availability results."""
+"""Deterministic Japanese formatting for copy-ready Slack availability."""
 
 from __future__ import annotations
 
@@ -7,6 +7,11 @@ from datetime import date, datetime
 from free_time.models import AvailabilityResult, PeriodType, TimeRange
 
 _WEEKDAY_LABELS = ("月", "火", "水", "木", "金", "土", "日")
+_PERIOD_LABELS = {
+    PeriodType.CURRENT_WEEK: "今週",
+    PeriodType.NEXT_WEEK: "来週",
+    PeriodType.WEEK_AFTER_NEXT: "再来週",
+}
 
 
 def format_availability(
@@ -15,18 +20,20 @@ def format_availability(
     *,
     duration_minutes: int | None = None,
 ) -> str:
-    """Return only the message suitable for forwarding to interviewers.
+    """Return a period heading followed by only the copy-ready message."""
 
-    Period and requested duration remain parameters for compatibility with
-    existing callers; filtering is performed before formatting.
-    """
+    try:
+        period_label = _PERIOD_LABELS[period]
+    except (KeyError, TypeError) as exc:
+        raise ValueError(f"Unsupported period: {period!r}") from exc
 
-    if not isinstance(period, PeriodType):
-        raise ValueError(f"Unsupported period: {period!r}")
+    title = f"📅 {period_label}の空き時間"
+    if duration_minutes is not None:
+        title += f"（{duration_minutes}分以上）"
     if not result.slots:
-        return "条件に合う空き時間はありませんでした．"
+        return f"{title}\n\n条件に合う空き時間はありませんでした．"
 
-    lines = ["以下の日程で調整可能です．", ""]
+    lines = [title, "", "以下の日程で調整可能です．", ""]
     for day in result.days:
         for slot in day.slots:
             lines.append(f"・{_format_share_slot(day.date, slot)}")
