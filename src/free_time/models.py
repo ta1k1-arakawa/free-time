@@ -56,6 +56,7 @@ class PeriodType(Enum):
 
     CURRENT_WEEK = "current_week"
     NEXT_WEEK = "next_week"
+    WEEK_AFTER_NEXT = "week_after_next"
 
 
 @dataclass(frozen=True, slots=True)
