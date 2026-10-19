@@ -10,7 +10,11 @@ from free_time.config import AppConfig
 from free_time.core.availability import calculate_availability
 from free_time.core.command_parser import parse_command
 from free_time.core.formatter import format_availability
-from free_time.core.periods import current_week_range, next_week_range
+from free_time.core.periods import (
+    current_week_range,
+    next_week_range,
+    week_after_next_range,
+)
 from free_time.models import PeriodType, TimeRange
 from free_time.services.google_calendar import GoogleCalendarServiceError
 
@@ -81,6 +85,8 @@ def _period_for_command(
         return current_week_range(now, config.timezone)
     if period_type is PeriodType.NEXT_WEEK:
         return next_week_range(now, config.timezone)
+    if period_type is PeriodType.WEEK_AFTER_NEXT:
+        return week_after_next_range(now, config.timezone)
     raise ValueError(f"Unsupported period: {period_type!r}")
 
 
