@@ -133,8 +133,7 @@ def test_week_after_next_with_90_minutes_queries_correct_week() -> None:
         "上記の中からご都合のよい時間帯をご指定いただけますと幸いです．"
     )
     assert too_long == (
-        "📅 再来週の空き時間（150分以上）\n\n"
-        "条件に合う空き時間はありませんでした．"
+        "📅 再来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
     )
 
 
