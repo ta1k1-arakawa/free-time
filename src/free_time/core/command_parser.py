@@ -1,4 +1,4 @@
-"""Deterministic parser for the small MVP command vocabulary."""
+"""Deterministic parser for supported Slack availability commands."""
 
 from __future__ import annotations
 
@@ -6,32 +6,38 @@ import re
 
 from free_time.models import WEEK_MINUTES, Command, PeriodType
 
-_COMMANDS = {
+_PERIODS = {
     "今週": PeriodType.CURRENT_WEEK,
-    "今週の空き": PeriodType.CURRENT_WEEK,
-    "今週の空き時間": PeriodType.CURRENT_WEEK,
     "来週": PeriodType.NEXT_WEEK,
-    "来週の空き": PeriodType.NEXT_WEEK,
-    "来週の空き時間": PeriodType.NEXT_WEEK,
+    "再来週": PeriodType.WEEK_AFTER_NEXT,
 }
-_COMMAND_PATTERN = re.compile(
-    r"^(今週の空き時間|今週の空き|今週|来週の空き時間|来週の空き|来週)"
-    r"(?:\s+([0-9]+))?$"
+_STANDARD_COMMAND_PATTERN = re.compile(
+    r"^(今週|来週|再来週)(?:の空き時間|の空き)?"
+    r"(?:\s+([0-9]+)(?:分)?)?$"
+)
+_NATURAL_COMMAND_PATTERN = re.compile(
+    r"^(今週|来週|再来週)の([0-9]+)分の空き(?:時間)?$"
 )
 
 
 def parse_command(text: str) -> Command | None:
-    """Parse an allowed command, returning ``None`` for unknown input."""
+    """Parse a supported command, returning None for unrelated input."""
 
     if not isinstance(text, str):
         return None
-    match = _COMMAND_PATTERN.fullmatch(text.strip())
+
+    normalized = text.strip()
+    match = _STANDARD_COMMAND_PATTERN.fullmatch(normalized)
+    if match is None:
+        match = _NATURAL_COMMAND_PATTERN.fullmatch(normalized)
     if match is None:
         return None
-    period = _COMMANDS[match.group(1)]
+
+    period = _PERIODS[match.group(1)]
     duration_text = match.group(2)
     if duration_text is None:
         return Command(period=period)
+
     try:
         duration_minutes = int(duration_text)
     except ValueError:
