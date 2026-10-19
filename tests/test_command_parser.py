@@ -24,6 +24,14 @@ def test_next_week_phrases_parse_to_next_week(text: str) -> None:
 
 @pytest.mark.parametrize(
     "text",
+    ["再来週", " 再来週 ", "再来週の空き", "再来週の空き時間"],
+)
+def test_week_after_next_phrases_parse(text: str) -> None:
+    assert parse_command(text) == Command(PeriodType.WEEK_AFTER_NEXT)
+
+
+@pytest.mark.parametrize(
+    "text",
     [
         "こんにちは",
         "今週は忙しい",
@@ -32,7 +40,6 @@ def test_next_week_phrases_parse_to_next_week(text: str) -> None:
         "今日",
         "明日",
         "今月",
-        "再来週",
         "今週お願いします",
         "来週面接",
         "今週の予定",
@@ -57,6 +64,14 @@ def test_parser_only_trims_outer_whitespace() -> None:
         ("来週\t60", Command(PeriodType.NEXT_WEEK, 60)),
         ("今週の空き 90", Command(PeriodType.CURRENT_WEEK, 90)),
         ("今週の空き時間 120", Command(PeriodType.CURRENT_WEEK, 120)),
+        ("今週 90分", Command(PeriodType.CURRENT_WEEK, 90)),
+        ("来週\t90分", Command(PeriodType.NEXT_WEEK, 90)),
+        ("再来週 90", Command(PeriodType.WEEK_AFTER_NEXT, 90)),
+        ("再来週 90分", Command(PeriodType.WEEK_AFTER_NEXT, 90)),
+        ("再来週の空き時間 90分", Command(PeriodType.WEEK_AFTER_NEXT, 90)),
+        ("今週の90分の空き", Command(PeriodType.CURRENT_WEEK, 90)),
+        ("来週の90分の空き時間", Command(PeriodType.NEXT_WEEK, 90)),
+        ("再来週の90分の空き", Command(PeriodType.WEEK_AFTER_NEXT, 90)),
         (" \n来週の空き時間\t60 \n", Command(PeriodType.NEXT_WEEK, 60)),
     ],
 )
@@ -68,8 +83,13 @@ def test_duration_commands_parse_strictly(text: str, expected: Command) -> None:
     "text",
     [
         "今週30",
-        "今週 30分",
+        "今週90分",
         "今週 45",
+        "今週 45分",
+        "再来週 0分",
+        "再来週の45分の空き",
+        "再来週 90分お願いします",
+        "再来週の空きの90分の空き",
         "今週 0",
         "今週 -30",
         "今週お願いします",
