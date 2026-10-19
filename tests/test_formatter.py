@@ -48,6 +48,7 @@ def test_formats_only_copy_ready_message_in_full() -> None:
     )
 
     assert format_availability(availability, PeriodType.CURRENT_WEEK) == (
+        "📅 今週の空き時間\n\n"
         "以下の日程で調整可能です．\n\n"
         "・9月17日（木）14:30〜19:00\n"
         "・9月18日（金）10:00〜12:00\n"
@@ -69,13 +70,19 @@ def test_same_copy_ready_format_for_each_week(period: PeriodType) -> None:
     )
     output = format_availability(availability, period)
 
+    expected_title = {
+        PeriodType.CURRENT_WEEK: "今週",
+        PeriodType.NEXT_WEEK: "来週",
+        PeriodType.WEEK_AFTER_NEXT: "再来週",
+    }[period]
     assert output == (
+        f"📅 {expected_title}の空き時間\n\n"
         "以下の日程で調整可能です．\n\n"
         "・9月21日（月）10:00〜19:00\n\n"
         "上記の中からご都合のよい時間帯をご指定いただけますと幸いです．"
     )
-    assert "📅" not in output
     assert "📋" not in output
+    assert output.count("以下の日程で調整可能です．") == 1
 
 
 def test_duration_parameter_does_not_change_copy_ready_message() -> None:
@@ -93,14 +100,16 @@ def test_duration_parameter_does_not_change_copy_ready_message() -> None:
     )
 
     assert "・9月17日（木）10:00〜12:00" in output
-    assert "90分" not in output
-    assert "今週" not in output
+    assert output.startswith("📅 今週の空き時間（90分以上）\n\n")
+    assert "📋" not in output
 
 
 def test_no_slots_returns_only_empty_message() -> None:
     availability = result(AvailabilityDay(date(2026, 9, 17), ()))
 
-    assert format_availability(availability, PeriodType.CURRENT_WEEK) == EMPTY_MESSAGE
+    assert format_availability(availability, PeriodType.CURRENT_WEEK) == (
+        f"📅 今週の空き時間\n\n{EMPTY_MESSAGE}"
+    )
 
 
 def test_empty_day_is_skipped_when_another_day_has_slots() -> None:
@@ -114,6 +123,7 @@ def test_empty_day_is_skipped_when_another_day_has_slots() -> None:
 
     output = format_availability(availability, PeriodType.CURRENT_WEEK)
 
+    assert output.startswith("📅 今週の空き時間\n\n以下の日程で調整可能です．")
     assert "9月17日" not in output
     assert "空き時間なし" not in output
     assert "・9月18日（金）10:00〜10:30" in output
