@@ -456,6 +456,8 @@ local developmentでは、GOOGLE_CALENDAR_TOKEN_FILE=calendar_token.jsonを使�
 
 ## Tests
 
+GitHub Actionsでpush / PR更新時にlint・整形・unit test・core coverage・Docker起動確認を自動実行します。CI成功後のmainから既存Cloud Runへ反映するCDも用意しています。CDは初期状態では無効で、WIF認証とGitHub variablesの設定が必要です。手順とrequired checksは[CI / CD設定](docs/ci-cd.md)を参照してください。自動mergeは行いません。
+
 ~~~powershell
 ruff check .
 ruff format --check .

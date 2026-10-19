@@ -115,19 +115,22 @@ def test_week_after_next_with_90_minutes_queries_correct_week() -> None:
     output = application.handle_command("再来週 90分", now=now())
     too_long = application.handle_command("再来週の150分の空き", now=now())
 
-    assert calendar.requested_periods == [
-        TimeRange(
-            datetime(2026, 9, 28, tzinfo=TOKYO),
-            datetime(2026, 10, 5, tzinfo=TOKYO),
-        )
-    ] * 2
+    assert (
+        calendar.requested_periods
+        == [
+            TimeRange(
+                datetime(2026, 9, 28, tzinfo=TOKYO),
+                datetime(2026, 10, 5, tzinfo=TOKYO),
+            )
+        ]
+        * 2
+    )
     assert output is not None
     assert "📅 再来週の空き時間（90分以上）" in output
     assert "9/28（月）" in output
     assert "・10:00〜12:00" in output
     assert too_long == (
-        "📅 再来週の空き時間（150分以上）"
-        "\n\n条件に合う空き時間はありませんでした．"
+        "📅 再来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
     )
 
 
