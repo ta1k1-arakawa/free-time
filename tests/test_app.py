@@ -126,15 +126,8 @@ def test_week_after_next_with_90_minutes_queries_correct_week() -> None:
         * 2
     )
     assert output is not None
-    assert output == (
-        "📅 再来週の空き時間（90分以上）\n\n"
-        "以下の日程で調整可能です．\n\n"
-        "・9月28日（月）10:00〜12:00\n\n"
-        "上記の中からご都合のよい時間帯をご指定いただけますと幸いです．"
-    )
-    assert too_long == (
-        "📅 再来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
-    )
+    assert output == "・9月28日（月）10:00〜12:00"
+    assert too_long == "条件に合う空き時間はありませんでした．"
 
 
 def test_current_week_flow_uses_parser_availability_and_formatter() -> None:
@@ -144,7 +137,7 @@ def test_current_week_flow_uses_parser_availability_and_formatter() -> None:
     output = application.handle_command("今週", now=now())
 
     assert output is not None
-    assert output.startswith("📅 今週の空き時間\n\n以下の日程で調整可能です．")
+    assert output.startswith("・9月17日（木）14:30〜15:00")
     assert "・9月17日（木）14:30〜15:00" in output
     assert "・9月17日（木）16:00〜19:00" in output
     assert "・9月17日（木）15:00〜16:00" not in output
@@ -181,18 +174,10 @@ def test_duration_command_overrides_configured_minimum_slot() -> None:
     output = application.handle_command("来週 60", now=now())
     no_match = application.handle_command("来週 150", now=now())
 
-    assert default_match == (
-        "📅 来週の空き時間\n\n条件に合う空き時間はありませんでした．"
-    )
+    assert default_match == "条件に合う空き時間はありませんでした．"
     assert output is not None
-    assert output.startswith(
-        "📅 来週の空き時間（60分以上）\n\n以下の日程で調整可能です．"
-    )
-    assert "・9月24日（木）10:00〜12:00" in output
-    assert (
-        no_match
-        == "📅 来週の空き時間（150分以上）\n\n条件に合う空き時間はありませんでした．"
-    )
+    assert output == "・9月24日（木）10:00〜12:00"
+    assert no_match == "条件に合う空き時間はありませんでした．"
 
 
 def test_full_business_window_returns_no_availability_message() -> None:
@@ -204,7 +189,7 @@ def test_full_business_window_returns_no_availability_message() -> None:
 
     output = application.handle_command("今週", now=now())
 
-    assert output == "📅 今週の空き時間\n\n条件に合う空き時間はありませんでした．"
+    assert output == "条件に合う空き時間はありませんでした．"
     assert "以下の日程で調整可能です．" not in output
 
 

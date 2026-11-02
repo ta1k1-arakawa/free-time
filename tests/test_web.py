@@ -187,6 +187,49 @@ def test_allowed_message_calls_application_and_replies_to_top_level_thread() -> 
     ]
 
 
+def test_duplicate_delivery_of_same_message_posts_only_once() -> None:
+    application = FakeApplication()
+    slack_client = FakeSlackClient()
+    client = build_test_client(application, slack_client)
+
+    payload = {
+        "type": "message",
+        "channel": "ALLOWED_CHANNEL",
+        "user": "U123",
+        "text": "今週",
+        "ts": "123.456",
+    }
+    first = signed_request(client, payload)
+    second = signed_request(client, payload)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert application.calls == [("今週", fixed_now())]
+    assert len(slack_client.calls) == 1
+
+
+def test_distinct_messages_are_each_processed() -> None:
+    application = FakeApplication()
+    slack_client = FakeSlackClient()
+    client = build_test_client(application, slack_client)
+
+    for ts in ("123.456", "123.457"):
+        response = signed_request(
+            client,
+            {
+                "type": "message",
+                "channel": "ALLOWED_CHANNEL",
+                "user": "U123",
+                "text": "今週",
+                "ts": ts,
+            },
+        )
+        assert response.status_code == 200
+
+    assert application.calls == [("今週", fixed_now())] * 2
+    assert len(slack_client.calls) == 2
+
+
 def test_existing_thread_is_preserved() -> None:
     application = FakeApplication()
     slack_client = FakeSlackClient()

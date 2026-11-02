@@ -13,6 +13,8 @@ _PERIOD_LABELS = {
     PeriodType.WEEK_AFTER_NEXT: "再来週",
 }
 
+EMPTY_MESSAGE = "条件に合う空き時間はありませんでした．"
+
 
 def format_availability(
     result: AvailabilityResult,
@@ -20,29 +22,28 @@ def format_availability(
     *,
     duration_minutes: int | None = None,
 ) -> str:
-    """Return a period heading followed by only the copy-ready message."""
+    """Return only the availability slot lines, one per line.
+
+    The reply intentionally carries no heading, introduction, or closing
+    sentence: each line is ``・M月D日（曜）HH:MM〜HH:MM`` and nothing else.
+    ``duration_minutes`` is accepted for interface compatibility and does
+    not change the output. When there are no slots, only the empty-result
+    message is returned.
+    """
 
     try:
-        period_label = _PERIOD_LABELS[period]
+        _PERIOD_LABELS[period]
     except (KeyError, TypeError) as exc:
         raise ValueError(f"Unsupported period: {period!r}") from exc
 
-    title = f"📅 {period_label}の空き時間"
-    if duration_minutes is not None:
-        title += f"（{duration_minutes}分以上）"
     if not result.slots:
-        return f"{title}\n\n条件に合う空き時間はありませんでした．"
+        return EMPTY_MESSAGE
 
-    lines = [title, "", "以下の日程で調整可能です．", ""]
-    for day in result.days:
-        for slot in day.slots:
-            lines.append(f"・{_format_share_slot(day.date, slot)}")
-    lines.extend(
-        [
-            "",
-            "上記の中からご都合のよい時間帯をご指定いただけますと幸いです．",
-        ]
-    )
+    lines = [
+        f"・{_format_share_slot(day.date, slot)}"
+        for day in result.days
+        for slot in day.slots
+    ]
     return "\n".join(lines)
 
 
@@ -61,4 +62,4 @@ def _weekday_label(value: date) -> str:
     return _WEEKDAY_LABELS[value.weekday()]
 
 
-__all__ = ["format_availability"]
+__all__ = ["EMPTY_MESSAGE", "format_availability"]
