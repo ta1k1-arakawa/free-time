@@ -13,7 +13,7 @@ def test_defaults_are_loaded_without_external_services() -> None:
 
     assert config.timezone.key == "Asia/Tokyo"
     assert config.workday_start == time(10, 0)
-    assert config.workday_end == time(19, 0)
+    assert config.workday_end == time(20, 0)
     assert config.workdays == (0, 1, 2, 3, 4)
     assert config.min_slot_minutes == 30
     assert config.slot_granularity_minutes == 30

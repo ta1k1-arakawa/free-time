@@ -13,7 +13,7 @@ Slack Events API -> Cloud Run -> FastAPI / Slack Bolt
   -> Formatter -> Slack thread reply
 ~~~
 
-Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。対応するcommandは「今週」「来週」「再来週」と、それぞれの「の空き」「の空き時間」付き表記です。「今週 90」「来週 90分」「再来週の90分の空き」のような30分単位の指定も認識します。
+Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。対応するcommandは「今週」「来週」「再来週」と、それぞれの「の空き」「の空き時間」付き表記です。「今週 90」「来週 90分」「再来週の90分の空き」のような分数の指定も認識します。分数は30の倍数でなくてもよく、任意の正の整数（1週間まで）を指定できます。
 
 Slackの返信は候補日時の行のみで、見出し・前置き・締めの文は付けません。空きのない日付は省き、候補日時はGoogle Calendarをもとに動的に計算します。条件に合う空き時間がない場合は「条件に合う空き時間はありませんでした．」のみを返します。
 
@@ -283,7 +283,7 @@ secretを入れないnon-secret env fileだけをlocalで作成します。フ�
 ~~~dotenv
 APP_TIMEZONE=Asia/Tokyo
 WORKDAY_START=10:00
-WORKDAY_END=19:00
+WORKDAY_END=20:00
 WORKDAYS=0,1,2,3,4
 MIN_SLOT_MINUTES=30
 SLOT_GRANULARITY_MINUTES=30
@@ -295,7 +295,7 @@ LOG_LEVEL=INFO
 
 複数Calendarを使う場合はGOOGLE_CALENDAR_IDS=primary,<CALENDAR_ID>相当です。commaを含む値をshellのset-env-varsへ直接渡すとdelimiterの扱いで誤ることがあるため、env-vars-fileを推奨します。GOOGLE_CALENDAR_TOKEN_FILEとGOOGLE_CLIENT_SECRET_FILEはCloud Run productionの基本経路では設定しません。
 
-BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。durationとbufferは対象週（1週間）を超える値をunsupportedとして扱います。commandは「今週 60」「来週 90分」「再来週の90分の空き」のように30分単位で指定できます。指定時間以上の連続した空き時間全体を表示し、固定長には分割しません。
+BUSY_BUFFER_MINUTESはCalendarのbusy intervalを前後へ広げるbufferです。既定値は30分で、0を指定するとbufferを無効化できます。durationとbufferは対象週（1週間）を超える値をunsupportedとして扱います。commandは「今週 60」「来週 90分」「再来週の90分の空き」のように任意の正の整数の分数で指定できます。指定時間以上の連続した空き時間全体を表示し、固定長には分割しません。
 
 ### 2. deployする
 
@@ -447,7 +447,7 @@ Secret Managerの値をCloud Runへenvironment variableとして渡す場合は�
 - Slack retryによる重複返信は、同一messageの再配送をchannelとmessage tsで判定して同一プロセス内ではじくことで防止しています。再配送が別Cloud Run instanceへ届いた場合はこの判定が効かないため、その場合のfuture improvementとしてCloud Tasks、Pub/Sub、Redis、Celery、background workerを検討できますが、このMVPには導入していません。
 - single-workspace MVPであり、Slack OAuthのmulti-workspace install flowは実装していません。
 - Slack DM、MPIM、app_mention、slash commandは対象外です。
-- command parserは今週・来週・再来週の固定phrase、空き・空き時間付き表記、30分単位のduration（数字のみ／「分」付き／「の90分の空き」形式）を認識します。それ以外の自由な自然言語やtimezone指定は対象外です。
+- command parserは今週・来週・再来週の固定phrase、空き・空き時間付き表記、任意の分数のduration（数字のみ／「分」付き／「の90分の空き」形式）を認識します。それ以外の自由な自然言語やtimezone指定は対象外です。
 - 実際のSlack workspace setup、Google OAuth、Secret Manager、Artifact Registry、Cloud Run deploy、IAM変更はmanual user operationです。
 
 ## Local setup
