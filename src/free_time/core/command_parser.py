@@ -42,11 +42,7 @@ def parse_command(text: str) -> Command | None:
         duration_minutes = int(duration_text)
     except ValueError:
         return None
-    if (
-        duration_minutes <= 0
-        or duration_minutes > WEEK_MINUTES
-        or duration_minutes % 30 != 0
-    ):
+    if duration_minutes <= 0 or duration_minutes > WEEK_MINUTES:
         return None
     return Command(period=period, duration_minutes=duration_minutes)
 
