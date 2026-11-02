@@ -65,7 +65,7 @@ class AppConfig:
 _DEFAULTS: dict[str, str] = {
     "APP_TIMEZONE": "Asia/Tokyo",
     "WORKDAY_START": "10:00",
-    "WORKDAY_END": "19:00",
+    "WORKDAY_END": "20:00",
     "WORKDAYS": "0,1,2,3,4",
     "MIN_SLOT_MINUTES": "30",
     "SLOT_GRANULARITY_MINUTES": "30",
