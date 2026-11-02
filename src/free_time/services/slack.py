@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+import threading
+from datetime import datetime, timedelta
 from typing import Any, Callable
 
 from slack_bolt import App
@@ -13,6 +14,14 @@ from slack_sdk.web.client import WebClient
 
 from free_time.app import FreeTimeApplication
 from free_time.config import AppConfig
+
+# Slack redelivers an event when the HTTP response is not returned within
+# its acknowledgement window, and every redelivery carries the same message
+# ``ts``. Remembering claimed message keys for an hour covers the whole
+# retry schedule (immediate, +1 minute, +5 minutes, and delayed retries)
+# while keeping the in-process store small.
+_CLAIMED_EVENT_TTL = timedelta(hours=1)
+_CLAIMED_EVENT_MAX_ENTRIES = 1024
 
 
 def build_slack_app(
@@ -26,6 +35,42 @@ def build_slack_app(
 
     config.validate_runtime()
     now = clock or (lambda: datetime.now(config.timezone))
+
+    claimed_events: dict[str, datetime] = {}
+    claimed_events_lock = threading.Lock()
+
+    def claim_event(event: dict) -> bool:
+        """Return True only for the first delivery of a message event.
+
+        Slack Events API delivery is at-least-once: when processing takes
+        longer than Slack's acknowledgement window (for example on a Cloud
+        Run cold start), Slack sends the same event again and, without this
+        claim, each delivery would post another identical thread reply.
+        The claim is keyed by channel and message ``ts``, which are stable
+        across redeliveries of the same message. Events without a usable
+        key cannot be deduplicated and are always processed.
+        """
+
+        channel = event.get("channel")
+        timestamp = event.get("ts")
+        if not isinstance(channel, str) or not isinstance(timestamp, str):
+            return True
+        key = f"{channel}:{timestamp}"
+        current = now()
+        with claimed_events_lock:
+            expired = [
+                claimed_key
+                for claimed_key, claimed_at in claimed_events.items()
+                if current - claimed_at > _CLAIMED_EVENT_TTL
+            ]
+            for claimed_key in expired:
+                del claimed_events[claimed_key]
+            if key in claimed_events:
+                return False
+            claimed_events[key] = current
+            while len(claimed_events) > _CLAIMED_EVENT_MAX_ENTRIES:
+                claimed_events.pop(next(iter(claimed_events)))
+            return True
 
     def authorize(**_: object) -> AuthorizeResult:
         return AuthorizeResult(
@@ -57,6 +102,9 @@ def build_slack_app(
     @slack_app.event("message")
     def handle_message(event: dict, client: WebClient, logger: logging.Logger) -> None:
         if not _should_process_event(event, config.slack_allowed_channel_id):
+            return
+        if not claim_event(event):
+            logger.info("Ignored duplicate Slack event delivery")
             return
 
         response_text = application.handle_command(event.get("text", ""), now=now())
