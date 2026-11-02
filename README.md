@@ -15,20 +15,14 @@ Slack Events API -> Cloud Run -> FastAPI / Slack Bolt
 
 Calendar eventのタイトル、説明、参加者、場所、Meet URLなどは取得せず、busy intervalだけを扱います。対応するcommandは「今週」「来週」「再来週」と、それぞれの「の空き」「の空き時間」付き表記です。「今週 90」「来週 90分」「再来週の90分の空き」のような30分単位の指定も認識します。
 
-Slackの返信は最初に「📅 今週の空き時間（60分以上）」など検索した週と指定時間の見出しを1つ表示し、その下に面談相手へそのまま送れる文面のみを続けます。日ごとの確認用一覧や「先方への送付用」の見出しは表示しません。空きのない日付は省き、候補日時はGoogle Calendarをもとに動的に計算します。
+Slackの返信は候補日時の行のみで、見出し・前置き・締めの文は付けません。空きのない日付は省き、候補日時はGoogle Calendarをもとに動的に計算します。条件に合う空き時間がない場合は「条件に合う空き時間はありませんでした．」のみを返します。
 
 ~~~text
-📅 今週の空き時間（60分以上）
-
-以下の日程で調整可能です．
-
 ・10月19日（月）17:00〜18:00
 ・10月20日（火）10:00〜13:30
 ・10月20日（火）17:00〜19:00
 ・10月21日（水）18:00〜19:00
 ・10月23日（金）16:30〜19:00
-
-上記の中からご都合のよい時間帯をご指定いただけますと幸いです．
 ~~~
 
 ## 前提条件
@@ -450,7 +444,7 @@ Secret Managerの値をCloud Runへenvironment variableとして渡す場合は�
 
 - Slack Events APIはprocess_before_response=Trueで、Google FreeBusy request、availability計算、Slack chat.postMessageをHTTP response前に実行します。
 - Cloud Run cold startやGoogle API latencyによってSlackの3秒response制限に近づく可能性があります。production validationで実測してください。
-- 遅延やSlack retryが実測された場合のfuture improvementとしてCloud Tasks、Pub/Sub、Redis、Celery、background workerを検討できますが、このMVPには導入していません。
+- Slack retryによる重複返信は、同一messageの再配送をchannelとmessage tsで判定して同一プロセス内ではじくことで防止しています。再配送が別Cloud Run instanceへ届いた場合はこの判定が効かないため、その場合のfuture improvementとしてCloud Tasks、Pub/Sub、Redis、Celery、background workerを検討できますが、このMVPには導入していません。
 - single-workspace MVPであり、Slack OAuthのmulti-workspace install flowは実装していません。
 - Slack DM、MPIM、app_mention、slash commandは対象外です。
 - command parserは今週・来週・再来週の固定phrase、空き・空き時間付き表記、30分単位のduration（数字のみ／「分」付き／「の90分の空き」形式）を認識します。それ以外の自由な自然言語やtimezone指定は対象外です。
