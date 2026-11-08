@@ -2,7 +2,7 @@
 
 Slackの指定チャンネルで「今週」「来週」「再来週」を受け取ると、Google Calendar FreeBusy APIからbusy intervalだけを取得し、面談・面接調整用の候補時間を計算してSlack threadへ返信するBotです。
 
-PythonによるMVP実装、Google Calendar FreeBusy連携、Slack Events API連携、FastAPI、Dockerfile、およびCloud Run向けの実行構成とセットアップ手順を整備しています。Cloud Runへのデプロイは完了しています（2026年11月時点、開発者確認）。SlackとGoogle Calendarを連携した本番環境での動作状況は、別途確認のうえ更新します。
+PythonによるMVP実装、Google Calendar FreeBusy連携、Slack Events API連携、FastAPI、Dockerfile、およびCloud Run向けの実行構成とセットアップ手順を整備しています。Cloud Runへのデプロイは完了しています（2026年11月時点、開発者確認）。本番環境でSlackからのコマンドを受け付け、実際のGoogle Calendarから空き時間を取得して返信できることを開発者が確認済みです。
 
 ## Architecture
 
@@ -488,7 +488,7 @@ unit testはGoogle Calendar、Slack、networkへ接続しません。Google cred
 7. Phase 6 — Container and Cloud Run Readiness（complete）
 8. Phase 7 — Production Setup Documentation（complete）
 
-MVP implementationとproduction setup documentationは完成しており、Cloud Runへのデプロイは実施済みです（2026年11月時点、開発者確認）。Slack workspace setup、Google OAuth、IAM変更などの構成と動作状況は、利用環境に応じて確認・管理します。
+MVP implementationとproduction setup documentationは完成しており、Cloud Runへのデプロイと、Slack・Google Calendar連携を含む本番動作の確認は完了しています（2026年11月時点、開発者確認）。Slack workspace setup、Google OAuth、IAM変更などの設定は利用環境に応じて管理します。
 
 ## Official references
 
