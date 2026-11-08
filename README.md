@@ -2,7 +2,7 @@
 
 Slackの指定チャンネルで「今週」「来週」「再来週」を受け取ると、Google Calendar FreeBusy APIからbusy intervalだけを取得し、面談・面接調整用の候補時間を計算してSlack threadへ返信するBotです。
 
-MVPのPython実装、Google Calendar FreeBusy連携、Slack Events API連携、FastAPI、Dockerfile、Cloud Run runtime対応、およびproduction setup documentationまで完成しています。実際のSlack workspace設定、Google Cloud resource作成、OAuth実行、Cloud Run deployはユーザーが行う作業であり、このrepositoryでは完了していません。
+PythonによるMVP実装、Google Calendar FreeBusy連携、Slack Events API連携、FastAPI、Dockerfile、およびCloud Run向けの実行構成とセットアップ手順を整備しています。Cloud Runへのデプロイは完了しています（2026年11月時点、開発者確認）。SlackとGoogle Calendarを連携した本番環境での動作状況は、別途確認のうえ更新します。
 
 ## Architecture
 
@@ -448,7 +448,7 @@ Secret Managerの値をCloud Runへenvironment variableとして渡す場合は�
 - single-workspace MVPであり、Slack OAuthのmulti-workspace install flowは実装していません。
 - Slack DM、MPIM、app_mention、slash commandは対象外です。
 - command parserは今週・来週・再来週の固定phrase、空き・空き時間付き表記、任意の分数のduration（数字のみ／「分」付き／「の90分の空き」形式）を認識します。それ以外の自由な自然言語やtimezone指定は対象外です。
-- 実際のSlack workspace setup、Google OAuth、Secret Manager、Artifact Registry、Cloud Run deploy、IAM変更はmanual user operationです。
+- Cloud Runへのデプロイは実施済みです。Slack workspace setup、Google OAuth、Secret Manager、Artifact Registry、IAM変更などは環境に応じた手動設定・管理が必要です。
 
 ## Local setup
 
@@ -488,7 +488,7 @@ unit testはGoogle Calendar、Slack、networkへ接続しません。Google cred
 7. Phase 6 — Container and Cloud Run Readiness（complete）
 8. Phase 7 — Production Setup Documentation（complete）
 
-MVP implementation and production setup documentation are complete. Actual production deployment、Slack workspace setup、Google Cloud resource creation、OAuth実行、IAM変更はユーザーのmanual operationとして残っています。
+MVP implementationとproduction setup documentationは完成しており、Cloud Runへのデプロイは実施済みです（2026年11月時点、開発者確認）。Slack workspace setup、Google OAuth、IAM変更などの構成と動作状況は、利用環境に応じて確認・管理します。
 
 ## Official references
 
